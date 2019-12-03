@@ -10,11 +10,11 @@ class GameObject extends PIXI.Sprite{
     }
 
     move(vector={x:0,y:0}){
-        if(this.x + this.radius + vector.x > 0 && this.x + this.radius + vector.x < sceneWidth){
+        if(this.x - this.radius + vector.x >= 0 && this.x + this.radius + vector.x <= sceneWidth){
             this.x += vector.x;
         }
         else{
-            if(this.x + this.radius + vector.x <= 0){
+            if(this.x - this.radius + vector.x < 0){
                 this.x = this.radius;
                 console.log('left');
             }
@@ -24,17 +24,17 @@ class GameObject extends PIXI.Sprite{
             }
         }
 
-        if(this.y + this.radius + vector.y > 0 && this.y + this.radius + vector.y < sceneHeight){
+        if(this.y - this.radius + vector.y >= 0 && this.y + this.radius + vector.y <= sceneHeight){
             this.y += vector.y;
         }
         else{
-            if(this.y + this.radius + vector.y <= 0){
+            if(this.y - this.radius + vector.y < 0){
                 this.y = this.radius;
-                console.log('down');
+                console.log('up');
             }
             else{
                 this.y = sceneHeight - this.radius;
-                console.log('up');
+                console.log('down');
             }
         }
     }
@@ -45,12 +45,52 @@ class Player extends GameObject{
         super(sprite, x, y, scale, radius);
         this.speed = speed;
 
-        this.direction = {x: 0, y: 1};
+        this.direction = {x: 1, y: 0};
         this.velocity = {x: 0, y: 0};
         this.acceleration = {x: 0, y:0};
+
+        this.rotation = 0;
     }
 
     drive(){
-        
+        if(keyboard[38]){
+            this.velocity.y = this.direction.y * this.speed;
+            this.velocity.x = this.direction.x * this.speed;
+        }
+        else if(!keyboard[40]){
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+        }
+
+        if(keyboard[40]){
+            this.velocity.y = this.direction.y * -this.speed;
+            this.velocity.x = this.direction.x * -this.speed;
+        }
+        else if(!keyboard[38]){
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+        }
+
+        if(keyboard[39]){
+            this.rotation += .1;
+
+            console.log(this.direction);
+
+            this.direction.y = Math.sin(this.rotation);
+            this.direction.x = Math.cos(this.rotation);
+
+            this.direction = normalizeVector(this.direction);
+        }
+
+        if(keyboard[37]){
+            this.rotation -= .1;
+
+            this.direction.y = Math.sin(this.rotation);
+            this.direction.x = Math.cos(this.rotation);
+
+            this.direction = normalizeVector(this.direction);
+        }
+
+        this.move(this.velocity);
     }
 }
