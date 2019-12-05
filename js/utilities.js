@@ -1,8 +1,14 @@
 function normalizeVector(vector={x:0, y:0}){
-    let normalizedVector = {x: 0, y: 0};
-    normalizedVector.x = vector.x / Math.hypot(vector.x, vector.y);
-    normalizedVector.y = vector.y / Math.hypot(vector.x, vector.y);
-    return normalizedVector;
+    mag = Math.hypot(vector.x, vector.y);
+    if(mag != 1 && mag != 0){
+        let normalizedVector = {x: 0, y: 0};
+        normalizedVector.x = vector.x / Math.hypot(vector.x, vector.y);
+        normalizedVector.y = vector.y / Math.hypot(vector.x, vector.y);
+        return normalizedVector;
+    }
+    else{
+        return vector;
+    }
 }
 
 function clampMagnitude(vector={x:0, y:0}, maxMagnitude=1){
@@ -32,4 +38,18 @@ function projectVector(vector={x:0, y:0}, targetVector={x:0, y:0}){
     projectedVector.y = scalar * normlizedTarget.y;
 
     return projectedVector;
+}
+
+function collision(car1, car2){
+    let desiredVelocity = {x:0, y:0};
+
+    desiredVelocity.x = ((car1.mass * car1.velocity.x) + (car2.mass * car2.velocity.x)) / (car1.mass + car2.mass);
+    desiredVelocity.y = ((car1.mass * car1.velocity.y) + (car2.mass * car2.velocity.y)) / (car1.mass + car2.mass);
+
+    desiredVelocity = normalizeVector(desiredVelocity);
+    desiredVelocity.x *= car1.maxSpeed;
+    desiredVelocity.y *= car1.maxSpeed;
+
+    car1.applyForce({x:desiredVelocity.x - car1.velocity.x, y:desiredVelocity.y - car1.velocity.y});
+    car2.applyForce({x:desiredVelocity.x - car2.velocity.x, y:desiredVelocity.y - car2.velocity.y});
 }

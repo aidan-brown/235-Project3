@@ -43,6 +43,8 @@ const stage = app.stage;
 
 let cars = new Array();
 
+let check = true;
+
 PIXI.loader.
 add(["images/SportsRacingCar_0.png", "images/SportsRacingCar_2.png", "images/SportsRacingCar_3.png", "images/SportsRacingCar_4.png", "images/SportsRacingCar_5.png", "images/SportsRacingCar_6.png", "images/SportsRacingCar_7.png"]).
 on("progress",e=>{console.log(`progress=${e.progress}`)})
@@ -60,10 +62,10 @@ function setup(){
         rightB: PIXI.loader.resources["images/SportsRacingCar_6.png"].texture
     };
 
-    cars.push(new Player(PIXI.loader.resources["images/SportsRacingCar_0.png"].texture, 100, 100, 1, PIXI.loader.resources["images/SportsRacingCar_0.png"].texture.width / 2, 5, controls.player1));
+    cars.push(new Player(PIXI.loader.resources["images/SportsRacingCar_0.png"].texture, 100, 100, 1, PIXI.loader.resources["images/SportsRacingCar_0.png"].texture.width / 2, 5, 1, controls.player1));
     stage.addChild(cars[0]);
 
-    cars.push(new Player(PIXI.loader.resources["images/SportsRacingCar_0.png"].texture, 100, 200, 1, PIXI.loader.resources["images/SportsRacingCar_0.png"].texture.width / 2, 5, controls.player2));
+    cars.push(new Player(PIXI.loader.resources["images/SportsRacingCar_0.png"].texture, 100, 200, 1, PIXI.loader.resources["images/SportsRacingCar_0.png"].texture.width / 2, 5, 1, controls.player2));
     stage.addChild(cars[1]);
 
     app.ticker.add(gameLoop);
@@ -75,6 +77,11 @@ function gameLoop(){
 
     for(let car of cars){
         car.drive();
+        for(let checkCar of cars){
+            if(car != checkCar && Math.hypot(car.x - checkCar.x, car.y - checkCar.y) < car.radius + checkCar.radius){
+                collision(car, checkCar);
+            }
+        }
     }
 }
 
