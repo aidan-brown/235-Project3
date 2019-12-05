@@ -17,7 +17,7 @@ const controls = {
 
 let sprites = {};
 
-let keyboard = new Array();
+const keyboard = new Array();
 
 document.addEventListener('keydown', e => {
     if(keyboard[e.keyCode] != true){

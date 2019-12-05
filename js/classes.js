@@ -101,7 +101,7 @@ class Player extends GameObject{
             else if(dotProduct(this.acceleration, this.direction) < 0){
                 this.rotation -= .005 * this.speed;
 
-                this.setTexture(sprites.leftB);
+                this.setTexture(sprites.rightB);
             }
 
             this.direction.y = Math.sin(this.rotation);
@@ -119,7 +119,7 @@ class Player extends GameObject{
             else if(dotProduct(this.acceleration, this.direction) < 0){
                 this.rotation += .005 * this.speed;
 
-                this.setTexture(sprites.rightB);
+                this.setTexture(sprites.leftB);
             }
 
             this.direction.y = Math.sin(this.rotation);
