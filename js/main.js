@@ -5,13 +5,15 @@ const controls = {
         forward: 38,
         backward: 40,
         left: 37,
-        right: 39
+        right: 39,
+        drift: 96
     },
     player2: {
         forward: 87,
         backward: 83,
         left: 65,
-        right: 68
+        right: 68,
+        drift: 32
     }
 }
 
@@ -22,19 +24,17 @@ const keyboard = new Array();
 document.addEventListener('keydown', e => {
     if(keyboard[e.keyCode] != true){
         keyboard[e.keyCode] = true;
-        console.log(`${e.keyCode}: ${keyboard[e.keyCode]}`);
     }
 });
 document.addEventListener('keyup', e => {
     if(keyboard[e.keyCode] != false){
         keyboard[e.keyCode] = false;
-        console.log(`${e.keyCode}: ${keyboard[e.keyCode]}`);
     }
 });
 
 const app = new PIXI.Application(screen.width / 2, screen.height / 2);
 document.body.appendChild(app.view);
-app.renderer.backgroundColor = 0xFF00FF;
+app.renderer.backgroundColor = 0x00FFFF;
 
 const sceneWidth = app.view.width;
 const sceneHeight = app.view.height;

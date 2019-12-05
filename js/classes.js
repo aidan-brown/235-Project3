@@ -37,7 +37,7 @@ class GameObject extends PIXI.Sprite{
 }
 
 class Player extends GameObject{
-    constructor(sprite, x=0, y=0, scale=0.1, radius=1, maxSpeed=1, controls={forward: 38, backward: 40, left: 37, right: 39}){
+    constructor(sprite, x=0, y=0, scale=0.1, radius=1, maxSpeed=1, controls={forward: 38, backward: 40, left: 37, right: 39, drift: 32}){
         super(sprite, x, y, scale, radius);
 
         this.maxSpeed = maxSpeed;
@@ -48,8 +48,11 @@ class Player extends GameObject{
         this.acceleration = {x: 0, y:0};
 
         this.rotation = 0;
+        this.forwardAngle = 0;
 
         this.controls = controls;
+
+        this.wasDriftPrev = false;
     }
 
     drive(){
@@ -63,7 +66,9 @@ class Player extends GameObject{
             this.acceleration.y *= .99;
             this.acceleration.x *= .99;
 
-            this.acceleration = projectVector(this.acceleration, this.direction);
+            if(!keyboard[this.controls.drift]){
+                this.acceleration = projectVector(this.acceleration, this.direction);
+            }
 
             this.setTexture(sprites.forward);
         }
@@ -78,7 +83,9 @@ class Player extends GameObject{
             this.acceleration.y *= .99;
             this.acceleration.x *= .99;
 
-            this.acceleration = projectVector(this.acceleration, this.direction);
+            if(!keyboard[this.controls.drift]){
+                this.acceleration = projectVector(this.acceleration, this.direction);
+            }
 
             this.setTexture(sprites.backward);
         }
@@ -94,38 +101,74 @@ class Player extends GameObject{
 
         if(keyboard[this.controls.right]){
             if(dotProduct(this.acceleration, this.direction) > 0){
-                this.rotation += .005 * this.speed;
+                this.forwardAngle += .005 * this.speed;
 
                 this.setTexture(sprites.rightF);
             }
             else if(dotProduct(this.acceleration, this.direction) < 0){
-                this.rotation -= .005 * this.speed;
+                this.forwardAngle -= .005 * this.speed;
 
                 this.setTexture(sprites.rightB);
             }
 
-            this.direction.y = Math.sin(this.rotation);
-            this.direction.x = Math.cos(this.rotation);
+            this.direction.y = Math.sin(this.forwardAngle);
+            this.direction.x = Math.cos(this.forwardAngle);
 
             this.direction = normalizeVector(this.direction);
+
+            if(keyboard[this.controls.drift] && (keyboard[this.controls.forward] || keyboard[this.controls.backward])){
+                if(dotProduct(this.acceleration, this.direction) > 0){
+                    this.rotation += (.007 * this.speed);
+                }
+                else if(dotProduct(this.acceleration, this.direction) < 0){
+                    this.rotation -= (.007 * this.speed);
+                }
+
+                this.wasDriftPrev = true;
+            }
+            else if(!this.wasDriftPrev){
+                this.rotation = this.forwardAngle;
+            }
+            else{
+                this.forwardAngle = this.rotation;
+                this.wasDriftPrev = false;
+            }
         }
 
         if(keyboard[this.controls.left]){
             if(dotProduct(this.acceleration, this.direction) > 0){
-                this.rotation -= .005 * this.speed;
+                this.forwardAngle -= .005 * this.speed;
 
                 this.setTexture(sprites.leftF);
             }
             else if(dotProduct(this.acceleration, this.direction) < 0){
-                this.rotation += .005 * this.speed;
+                this.forwardAngle += .005 * this.speed;
 
                 this.setTexture(sprites.leftB);
             }
 
-            this.direction.y = Math.sin(this.rotation);
-            this.direction.x = Math.cos(this.rotation);
+            this.direction.y = Math.sin(this.forwardAngle);
+            this.direction.x = Math.cos(this.forwardAngle);
 
             this.direction = normalizeVector(this.direction);
+
+            if(keyboard[this.controls.drift] && (keyboard[this.controls.forward] || keyboard[this.controls.backward])){
+                if(dotProduct(this.acceleration, this.direction) > 0){
+                    this.rotation -= (.007 * this.speed);
+                }
+                else if(dotProduct(this.acceleration, this.direction) < 0){
+                    this.rotation += (.007 * this.speed);
+                }
+
+                this.wasDriftPrev = true;
+            }
+            else if(!this.wasDriftPrev){
+                this.rotation = this.forwardAngle;
+            }
+            else{
+                this.forwardAngle = this.rotation;
+                this.wasDriftPrev = false;
+            }
         }
 
         this.acceleration = clampMagnitude(this.acceleration, this.maxSpeed);
