@@ -1,52 +1,68 @@
 class GameObject extends PIXI.Sprite{
-    constructor(sprite, x=0, y=0, scale=0.1, radius=0.1){
+    constructor(sprite, x=0, y=0, scale=0.1){
         super(sprite);
         this.anchor.set(0.5);
         this.scale.set(scale);
 
         this.x = x;
         this.y = y;
-        this.radius = radius;
+        this.radius = sprite.width / 2 * scale;
+        this.xOffset = 110;
+        this.yOffset = 20;
     }
 
     move(vector={x:0,y:0}){
-        if(this.x - this.radius + vector.x >= 0 && this.x + this.radius + vector.x <= sceneWidth){
+        if(this.x - this.radius + vector.x >= this.xOffset && this.x + this.radius + vector.x <= sceneWidth - this.xOffset){
             this.x += vector.x;
         }
         else{
-            if(this.x - this.radius + vector.x < 0){
-                this.x = this.radius;
+            if(this.x - this.radius + vector.x < this.xOffset){
+                this.x = this.radius + this.xOffset;
             }
             else{
-                this.x = sceneWidth - this.radius;
+                this.x = sceneWidth - this.radius - this.xOffset;
             }
         }
 
-        if(this.y - this.radius + vector.y >= 0 && this.y + this.radius + vector.y <= sceneHeight){
+        if(this.y - this.radius + vector.y >= this.yOffset && this.y + this.radius + vector.y <= sceneHeight - this.yOffset){
             this.y += vector.y;
         }
         else{
-            if(this.y - this.radius + vector.y < 0){
-                this.y = this.radius;
+            if(this.y - this.radius + vector.y < this.yOffset){
+                this.y = this.radius + this.yOffset;
             }
             else{
-                this.y = sceneHeight - this.radius;
+                this.y = sceneHeight - this.radius - this.yOffset;
             }
         }
     }
 }
 
+class Checkpoint extends GameObject{
+    constructor(sprite, x=0, y=0, scale=0.1){
+        super(sprite, x, y, scale);
+        this.scale.set(.2, 1.04);
+
+        this.boundingBox = {x1: x - (sprite.width / 2 * this.scale.x), x2: x + (sprite.width / 2 * this.scale.x), y1: y - (sprite.height / 2 * this.scale.y), y2: y + (sprite.height / 2 * this.scale.y)};
+    }
+
+    checkCollision(point={x:0, y:0}){
+        return (point.x >= this.boundingBox.x1 && point.x <= this.boundingBox.x2) && (point.y >= this.boundingBox.y1 && point.y <= this.boundingBox.y2);
+    }
+}
+
 class Player extends GameObject{
-    constructor(sprite, x=0, y=0, scale=0.1, radius=1, maxSpeed=1, mass=1, controls={forward: 38, backward: 40, left: 37, right: 39, drift: 32}){
-        super(sprite, x, y, scale, radius);
+    constructor(sprite, x=0, y=0, scale=0.1, maxSpeed=1, mass=1, controls={forward: 38, backward: 40, left: 37, right: 39, drift: 32}){
+        super(sprite, x, y, scale);
 
         // Force variables
         this.mass = mass;
 
         // Speed variables
         this.maxSpeed = maxSpeed;
+        this.originalMaxSpeed = maxSpeed;
         this.speed = 0;
-        this.turningSpeed = 0.007;
+        this.turningSpeed = 0.01;
 
         // Vector variables
         this.direction = {x: 1, y: 0};
@@ -59,6 +75,10 @@ class Player extends GameObject{
 
         // Controller object
         this.controls = controls;
+
+        // Race variables
+        this.laps = 0;
+        this.targetCheckpoint = halfwayLine;
     }
 
     drive(){
