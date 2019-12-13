@@ -7,8 +7,8 @@ class GameObject extends PIXI.Sprite{
         this.x = x;
         this.y = y;
         this.radius = sprite.width / 2 * scale;
-        this.xOffset = 110;
-        this.yOffset = 20;
+        this.xOffset = 0;
+        this.yOffset = 0;
     }
 
     move(vector={x:0,y:0}){
@@ -41,7 +41,7 @@ class GameObject extends PIXI.Sprite{
 class Checkpoint extends GameObject{
     constructor(sprite, x=0, y=0, scale=0.1){
         super(sprite, x, y, scale);
-        this.scale.set(.2, 1.04);
+        this.scale.set(.2, 1.72);
 
         this.boundingBox = {x1: x - (sprite.width / 2 * this.scale.x), x2: x + (sprite.width / 2 * this.scale.x), y1: y - (sprite.height / 2 * this.scale.y), y2: y + (sprite.height / 2 * this.scale.y)};
     }
@@ -52,15 +52,17 @@ class Checkpoint extends GameObject{
 }
 
 class Player extends GameObject{
-    constructor(sprite, x=0, y=0, scale=0.1, maxSpeed=1, mass=1, controls={forward: 38, backward: 40, left: 37, right: 39, drift: 32}){
+    constructor(player=1, sprite, x=0, y=0, scale=0.1, maxSpeed=1, mass=1, controls={forward: 38, backward: 40, left: 37, right: 39, drift: 32}){
         super(sprite, x, y, scale);
+
+        this.player = player;
 
         // Force variables
         this.mass = mass;
 
         // Speed variables
         this.maxSpeed = maxSpeed;
-        this.originalMaxSpeed = maxSpeed;
+        this.accelRate = 10;
         this.speed = 0;
         this.turningSpeed = 0.01;
 
@@ -71,7 +73,6 @@ class Player extends GameObject{
 
         // Rotation variables
         this.rotation = 0;
-        this.forwardAngle = 0;
 
         // Controller object
         this.controls = controls;
@@ -81,31 +82,36 @@ class Player extends GameObject{
         this.targetCheckpoint = halfwayLine;
     }
 
-    drive(){
+    drive(dt){
 
         // Forward Control
         if(keyboard[this.controls.forward]){
-            this.applyForce(this.direction);
+            this.applyForce(scaleVector(this.direction, this.accelRate));
 
-            this.setTexture(sprites.forward);
+            this.setTexture(sprites[`forward${this.player}`]);
         }
         // Backward Control
         else if(keyboard[this.controls.backward]){
-            this.applyForce({x: -this.direction.x, y: -this.direction.y});
+            this.applyForce(scaleVector(this.direction, -1 * this.accelRate));
 
-            this.setTexture(sprites.backward);
+            this.setTexture(sprites[`backward${this.player}`]);
         }
         // Apply Friction
         else{
-            this.applyFriction(0.1);
+            this.applyFriction(5);
 
-            this.setTexture(sprites.idle);
+            this.setTexture(sprites[`idle${this.player}`]);
         }
 
         this.velocity.y += this.acceleration.y;
         this.velocity.x += this.acceleration.x;
 
-        this.velocity = clampMagnitude(this.velocity, this.maxSpeed);
+        if((this.x < sceneWidth - 220 && this.x > 220) && (this.y > 220 && this.y < sceneHeight - 220)){
+            this.velocity = clampMagnitude(this.velocity, this.maxSpeed / 2); 
+        }
+        else{
+            this.velocity = clampMagnitude(this.velocity, this.maxSpeed);
+        }
         this.acceleration = {x:0, y:0};
 
         // Speed Control
@@ -115,20 +121,20 @@ class Player extends GameObject{
             this.velocity.x = 0;
             this.velocity.y = 0;
 
-            this.setTexture(sprites.idle);
+            this.setTexture(sprites[`idle${this.player}`]);
         }
 
         // Right Control
         if(keyboard[this.controls.right]){
             if(dotProduct(this.velocity, this.direction) > 0){
-                this.rotation += this.turningSpeed * this.speed;
+                this.rotation += this.turningSpeed * this.speed * dt;
 
-                this.setTexture(sprites.rightF);
+                this.setTexture(sprites[`rightF${this.player}`]);
             }
             else if(dotProduct(this.velocity, this.direction) < 0){
-                this.rotation -= this.turningSpeed * this.speed;
+                this.rotation -= this.turningSpeed * this.speed * dt;
 
-                this.setTexture(sprites.rightB);
+                this.setTexture(sprites[`rightB${this.player}`]);
             }
 
             this.direction.y = Math.sin(this.rotation);
@@ -142,14 +148,14 @@ class Player extends GameObject{
         // Left Control
         if(keyboard[this.controls.left]){
             if(dotProduct(this.velocity, this.direction) > 0){
-                this.rotation -= this.turningSpeed * this.speed;
+                this.rotation -= this.turningSpeed * this.speed * dt;
 
-                this.setTexture(sprites.leftF);
+                this.setTexture(sprites[`leftF${this.player}`]);
             }
             else if(dotProduct(this.velocity, this.direction) < 0){
-                this.rotation += this.turningSpeed * this.speed;
+                this.rotation += this.turningSpeed * this.speed * dt;
 
-                this.setTexture(sprites.leftB);
+                this.setTexture(sprites[`leftB${this.player}`]);
             }
 
             this.direction.y = Math.sin(this.rotation);
@@ -160,7 +166,7 @@ class Player extends GameObject{
             this.velocity = projectVector(this.velocity, this.direction);
         }
 
-        this.move(this.velocity);
+        this.move(scaleVector(this.velocity, dt));
     }
 
     applyForce(force={x:0, y:0}){

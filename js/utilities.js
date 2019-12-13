@@ -40,6 +40,13 @@ function projectVector(vector={x:0, y:0}, targetVector={x:0, y:0}){
     return projectedVector;
 }
 
+function scaleVector(vector={x:0, y:0}, scalar){
+    let scaledVector = {x:0, y:0};
+    scaledVector.x = vector.x * scalar;
+    scaledVector.y = vector.y * scalar;
+    return scaledVector;
+}
+
 function collision(car1, car2){
     let desiredVelocity = {x:0, y:0};
 
