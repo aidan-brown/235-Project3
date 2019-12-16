@@ -60,3 +60,7 @@ function collision(car1, car2){
     car1.applyForce({x:desiredVelocity.x - car1.velocity.x, y:desiredVelocity.y - car1.velocity.y});
     car2.applyForce({x:desiredVelocity.x - car2.velocity.x, y:desiredVelocity.y - car2.velocity.y});
 }
+
+function distance(vector1={x:0, y:0}, vector2={x:0, y:0}){
+    return Math.hypot(vector2.x - vector1.x, vector2.y - vector1.y);
+}

@@ -7,41 +7,42 @@ class GameObject extends PIXI.Sprite{
         this.x = x;
         this.y = y;
         this.radius = sprite.width / 2 * scale;
-        this.xOffset = 0;
-        this.yOffset = 0;
+        this.centerWallX = 200;
+        this.centerWallY = 400;
     }
 
     move(vector={x:0,y:0}){
-        if(this.x - this.radius + vector.x >= this.xOffset && this.x + this.radius + vector.x <= sceneWidth - this.xOffset){
+
+        if(this.x - this.radius + vector.x >= 0 && this.x + this.radius + vector.x <= sceneWidth){
             this.x += vector.x;
         }
         else{
-            if(this.x - this.radius + vector.x < this.xOffset){
-                this.x = this.radius + this.xOffset;
+            if(this.x - this.radius + vector.x < 0){
+                this.x = this.radius;
             }
             else{
-                this.x = sceneWidth - this.radius - this.xOffset;
+                this.x = sceneWidth - this.radius;
             }
         }
 
-        if(this.y - this.radius + vector.y >= this.yOffset && this.y + this.radius + vector.y <= sceneHeight - this.yOffset){
+        if(this.y - this.radius + vector.y >= 0 && this.y + this.radius + vector.y <= sceneHeight){
             this.y += vector.y;
         }
         else{
-            if(this.y - this.radius + vector.y < this.yOffset){
-                this.y = this.radius + this.yOffset;
+            if(this.y - this.radius + vector.y < 0){
+                this.y = this.radius;
             }
             else{
-                this.y = sceneHeight - this.radius - this.yOffset;
+                this.y = sceneHeight - this.radius;
             }
         }
     }
 }
 
 class Checkpoint extends GameObject{
-    constructor(sprite, x=0, y=0, scale=0.1){
-        super(sprite, x, y, scale);
-        this.scale.set(.2, 1.72);
+    constructor(sprite, x=0, y=0, scaleX, scaleY){
+        super(sprite, x, y, .1);
+        this.scale.set(scaleX, scaleY);
 
         this.boundingBox = {x1: x - (sprite.width / 2 * this.scale.x), x2: x + (sprite.width / 2 * this.scale.x), y1: y - (sprite.height / 2 * this.scale.y), y2: y + (sprite.height / 2 * this.scale.y)};
     }
@@ -79,7 +80,14 @@ class Player extends GameObject{
 
         // Race variables
         this.laps = 0;
-        this.targetCheckpoint = halfwayLine;
+        this.targetCheckpoint = 0;
+
+        //Audio variables
+        this.engineAudio = new Howl({
+            src: ['../audio/engine.wav'],
+            loop: true,
+            volume: 0
+        });
     }
 
     drive(dt){
